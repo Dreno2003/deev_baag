@@ -9,6 +9,9 @@ import { supabase } from "../config/superbase.config";
 interface AuthContextProps {
   user: User | undefined;
   loading: boolean;
+  isLoggedOut: boolean;
+  isSignedIn: boolean;
+  isSignedUp: boolean;
   signIn: ({
     email,
     password,
@@ -39,6 +42,9 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = React.useState<User | undefined>(undefined);
   const [loading, setLoading] = React.useState<boolean>(true);
+  const [isLoggedOut, setIsLoggedOut] = React.useState<boolean>(false);
+  const [isSignedIn, setIsSignedIn] = React.useState<boolean>(false);
+  const [isSignedUp, setIsSignedUp] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     // check if user is logged in (if there is previous session)
@@ -78,6 +84,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email,
       password,
     });
+
+    setIsSignedIn(true);
     if (error) {
       throw error;
     }
@@ -118,6 +126,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         },
       ]);
 
+      setIsSignedUp(true);
       if (error) {
         throw error;
       }
@@ -131,13 +140,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   //     }
   async function signOut() {
     const { error } = await supabase.auth.signOut();
+    setIsLoggedOut(true);
     if (error) {
       throw error;
     }
     setUser(undefined);
   }
 
-  const value = { user, loading, signIn, signUp, signOut };
+  const value = {
+    user,
+    loading,
+    signIn,
+    signUp,
+    signOut,
+    isLoggedOut,
+    isSignedIn,
+    isSignedUp,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
